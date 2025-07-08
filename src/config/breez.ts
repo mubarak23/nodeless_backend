@@ -201,6 +201,14 @@ class BreezService {
       
       return payOnchain;
     }
+
+    async getPayment(paymentHash: string) {
+      const getPaymentByHash = await this.sdk.getPayment({
+        type: 'paymentHash',
+        paymentHash
+      })
+      return getPaymentByHash;
+    }
 }
 
 export default new BreezService();

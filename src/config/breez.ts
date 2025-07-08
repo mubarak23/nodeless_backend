@@ -148,6 +148,59 @@ class BreezService {
       }
       return onChainResponse
     }
+
+    async makePaymentForBolt11(destination: string, payerNote?: string): Promise<string> {
+     
+      const prepareSendpaymentResponse = await this.sdk.prepareSendPayment({
+        destination: destination
+      });
+      const sendResponse = await this.sdk.sendPayment({
+       prepareResponse: prepareSendpaymentResponse,
+        payerNote
+      });
+      return sendResponse.payment;
+    }
+
+    async makePaymentForBolt12(destination: string, amountMsat: number, payerNote?: string): Promise<String> {
+      if (!amountMsat) {
+          throw new Error('amountMsat is required for Bolt 12 offers');
+        }
+      const prepareAmount = {
+        type: "bitcoin",
+        payerAmountSat: amountMsat,
+      };
+
+      const prepareSendpaymentResponse = await this.sdk.prepareSendPayment({
+        destination: destination,
+        amount: prepareAmount,
+      });
+      const paymentBolt12Response = await this.sdk.sendPayment({
+        prepareResponse: prepareSendpaymentResponse,
+        payerNote
+      });
+
+      return paymentBolt12Response.payment;
+    }
+
+    async makePaymentOnChain(destination: string, amountMsat: number, payerNote?: string): Promise<String> {
+      
+      const prepareAmount = {
+        type: "bitcoin",
+        receiverAmountSat: amountMsat,
+      };
+
+      const prepareSendpaymentResponse = await this.sdk.preparePayOnChain({
+        
+        amount: prepareAmount,
+      });
+      
+      const payOnchain = await this.sdk.payOnchain({
+        address: destination,
+        prepareResponse: prepareSendpaymentResponse
+      })
+      
+      return payOnchain;
+    }
 }
 
 export default new BreezService();

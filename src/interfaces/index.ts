@@ -4,7 +4,7 @@ export interface SignMessageResponse {
   signature: string,
 }
 
-export interface Bolt11InvoiceResponse {
+export interface BoltInvoiceResponse {
   invoice: string,
   fee: number,
   qrUrl?: string

@@ -2,7 +2,7 @@ import {
   connect, defaultConfig, ReceiveAmount
 } from '@breeztech/breez-sdk-liquid/node';
 import config from '../config/config';
-import { BoltInvoiceResponse, SignMessageResponse } from '../interfaces';
+import { BoltInvoiceResponse, OnChainResponse, SignMessageResponse } from '../interfaces';
 import { ConflictError } from '../utils/errorHandler';
 
 
@@ -99,7 +99,7 @@ class BreezService {
       const totalFee = swapperFee + receiveFeesSat;
 
       const invoiceResponse: BoltInvoiceResponse = {
-        invoice: paymentInvoice.destination,
+        destination: paymentInvoice.destination,
         fee: totalFee
       }
       return invoiceResponse;
@@ -121,10 +121,32 @@ class BreezService {
       const totalFee = swapperFee + receiveFeesSat;
 
       const invoiceResponse: BoltInvoiceResponse = {
-        invoice: paymentInvoice.destination,
+        destination: paymentInvoice.destination,
         fee: totalFee
       }
       return invoiceResponse;
+    }
+
+    async receivcePaymentOnchain (amountMsat: number, description: string): Promise<OnChainResponse> {
+      const amountType: ReceiveAmount = {
+        type: 'bitcoin',
+        payerAmountSat: amountMsat,
+      };
+
+      const prepareOnChainResponse = await this.sdk.prepareReceivePayment({
+        paymentMethod: 'bitcoinAddress',
+        amount: amountType,
+      })
+
+      const receiveFeesSat = prepareOnChainResponse.feesSat;
+      console.log(`Fees: ${receiveFeesSat} sats`)
+      const swapperFee = prepareOnChainResponse.swapperFee;
+      const totalFee = swapperFee + receiveFeesSat;
+        const onChainResponse: OnChainResponse = {
+        destination: prepareOnChainResponse.destination,
+        fee: totalFee
+      }
+      return onChainResponse
     }
 }
 

@@ -5,7 +5,13 @@ export interface SignMessageResponse {
 }
 
 export interface BoltInvoiceResponse {
-  invoice: string,
+  destination: string,
+  fee: number,
+  qrUrl?: string
+}
+
+export interface OnChainResponse {
+  destination: string,
   fee: number,
   qrUrl?: string
 }

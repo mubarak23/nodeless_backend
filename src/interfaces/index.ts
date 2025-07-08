@@ -3,3 +3,9 @@ export interface SignMessageResponse {
   pubkey: string,
   signature: string,
 }
+
+export interface Bolt11InvoiceResponse {
+  invoice: string,
+  fee: number,
+  qrUrl?: string
+}

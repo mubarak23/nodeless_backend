@@ -1,8 +1,8 @@
 import {
-  connect, defaultConfig
+  connect, defaultConfig, ReceiveAmount
 } from '@breeztech/breez-sdk-liquid/node';
 import config from '../config/config';
-import { SignMessageResponse } from '../interfaces';
+import { Bolt11InvoiceResponse, SignMessageResponse } from '../interfaces';
 import { ConflictError } from '../utils/errorHandler';
 
 
@@ -59,6 +59,50 @@ class BreezService {
       const isValid = verifySignature.isValid; 
 
       return  {status: isValid};
+    }
+
+    async getHealth() {
+      this.info = await this.sdk.getInfo(); 
+      return {
+        status: 'Ok',
+        message: 'connected With Breez SDK',
+        wallet: this.info.walletInfo.pubkey,
+        balance: this.info.walletInfo.balanceSat,
+        pendingSats: this.info.walletInfo.pendingSendSat,
+        pendingReceiveSats: this.info.walletInfo.pendingReceiveSat,
+      };
+    }
+
+    async createBolt11Invoice(amountMsat: number, description: string): Promise<Bolt11InvoiceResponse> {
+      if(amountMsat < this.currentLimit.receive.minSat || amountMsat > this.currentLimit.receive.maxSat ) {
+        throw new ConflictError("Invoice Amount is out of Range")
+      }
+
+      const amountType: ReceiveAmount = {
+        type: "bitcoin",
+        payerAmountSat: amountMsat 
+      };
+      const prepareInvoiceResponse = this.sdk.prepareReceivePayment(
+       {
+         paymentMethod: "bolt11Invoice",
+        amount: amountType
+       }
+      )
+
+      const paymentInvoice = await this.sdk.receivePayment({
+        prepareInvoiceResponse,
+        description
+      })
+      const receiveFeesSat = prepareInvoiceResponse.feesSat;
+      console.log(`Fees: ${receiveFeesSat} sats`)
+      const swapperFee = prepareInvoiceResponse.swapperFee;
+      const totalFee = swapperFee + receiveFeesSat;
+
+      const invoiceResponse: Bolt11InvoiceResponse = {
+        invoice: paymentInvoice,
+        fee: totalFee
+      }
+      return invoiceResponse;
     }
 }
 

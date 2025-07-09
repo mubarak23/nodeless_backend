@@ -37,8 +37,8 @@ class BreezService {
       }
     }
 
-    async signMessge(message: string): Promise<SignMessageResponse> {
-        const messageResponse = await this.sdk.signMessge({message});
+    async signMessage(message: string): Promise<SignMessageResponse> {
+        const messageResponse = await this.sdk.signMessage({message});
         const info = await this.sdk.getInfo();
 
         const response : SignMessageResponse = {
